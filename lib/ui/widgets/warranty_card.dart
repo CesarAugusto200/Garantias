@@ -16,7 +16,7 @@ class WarrantyCard extends StatelessWidget {
         ),
         trailing: Icon(Icons.info_outline),
         onTap: () {
-          // Aquí podrías mostrar detalles adicionales
+
         },
       ),
     );

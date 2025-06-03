@@ -12,7 +12,7 @@ class WarrantyViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addWarranty(Warranty warranty, BuildContext context) async { // <-- Agregando 'context' aquí
+  Future<void> addWarranty(Warranty warranty, BuildContext context) async {
     await WarrantyDatabase.instance.insertWarranty(warranty);
     await loadWarranties();
 

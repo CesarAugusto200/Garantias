@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "782967390032",
+    "project_id": "garantias-ea801",
+    "storage_bucket": "garantias-ea801.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:782967390032:android:34613834f636400d013655",
+        "android_client_info": {
+          "package_name": "com.example.garantias"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQhOlzRnmokmAccCCOrlnUO7FCW9myvaY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

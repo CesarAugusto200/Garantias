@@ -7,7 +7,7 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  // 🔹 Inicialización del servicio de notificaciones
+  //  Inicialización del servicio de notificaciones
   static Future<void> init() async {
     tz.initializeTimeZones();
 
