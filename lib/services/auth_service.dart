@@ -25,7 +25,7 @@ class AuthService {
     }
   }
 
-  /// 🔹 Inicio de sesión y recuperación del rol
+  ///  Inicio de sesión y recuperación del rol
   Future<String?> loginUser(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -49,7 +49,7 @@ class AuthService {
     }
   }
 
-  /// Método adicional para obtener el rol del usuario autenticado
+  /// Método para obtener el rol del usuario autenticado
   Future<String?> getUserRole() async {
     try {
       User? user = _auth.currentUser;
@@ -63,7 +63,7 @@ class AuthService {
     }
   }
 
-  /// 🔹 Cierre de sesión
+
   Future<void> logout() async {
     await _auth.signOut();
     print("✅ Usuario cerrado sesión correctamente");

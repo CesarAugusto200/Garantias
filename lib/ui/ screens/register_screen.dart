@@ -12,71 +12,91 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   String _role = 'Cliente';
 
+  Future<void> _registerUser() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('⚠️ Introduce un correo y contraseña válidos')));
+      return;
+    }
+
+    try {
+      print("🔎 Intentando registrar usuario con email: $email y rol: $_role");
+
+      User? user = await AuthService().registerUser(email, password, _role);
+
+      if (user != null) {
+        print("✅ Usuario creado con éxito - ID: ${user.uid}");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ Registro exitoso!')));
+        Navigator.pop(context);
+      } else {
+        print("❌ Error inesperado al registrar usuario.");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Error al registrar usuario')));
+      }
+    } catch (e) {
+      print("❌ Error Firebase Auth: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Error al registrar usuario: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Crear Cuenta",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.deepPurple],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person_add, color: Colors.deepPurple, size: 50),
+                    SizedBox(height: 10),
+                    Text("Crear Cuenta", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+                    SizedBox(height: 10),
+                    _buildTextField(_emailController, "Correo electrónico", Icons.email),
+                    SizedBox(height: 15),
+                    _buildTextField(_passwordController, "Contraseña", Icons.lock, isPassword: true),
+                    SizedBox(height: 20),
+                    _buildRoleSelector(),
+                    SizedBox(height: 30),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        elevation: 4,
+                      ),
+                      onPressed: _registerUser,
+                      child: Text("Registrar", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    ),
+                    SizedBox(height: 15),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "¿Ya tienes cuenta? Inicia sesión aquí",
+                        style: TextStyle(color: Colors.deepPurple, fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 10),
-              Text(
-                "Regístrate para comenzar",
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-              SizedBox(height: 30),
-              _buildTextField(_emailController, "Correo electrónico", Icons.email),
-              SizedBox(height: 15),
-              _buildTextField(_passwordController, "Contraseña", Icons.lock, isPassword: true),
-              SizedBox(height: 20),
-              _buildRoleSelector(),
-              SizedBox(height: 30),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                onPressed: () async {
-                  User? user = await AuthService().registerUser(
-                    _emailController.text.trim(), _passwordController.text.trim(), _role,
-                  );
-
-                  if (user != null) {
-                    print("Usuario creado con éxito - Rol seleccionado: $_role");
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error al registrar usuario')),
-                    );
-                  }
-                },
-                child: Text("Registrar", style: TextStyle(fontSize: 18, color: Colors.white)),
-              ),
-              SizedBox(height: 15),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  "¿Ya tienes cuenta? Inicia sesión aquí",
-                  style: TextStyle(color: Colors.blueAccent, fontSize: 16),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -89,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       obscureText: isPassword,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blueAccent),
+        prefixIcon: Icon(icon, color: Colors.deepPurple),
         filled: true,
         fillColor: Colors.grey[200],
         border: OutlineInputBorder(

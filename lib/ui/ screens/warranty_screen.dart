@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart'; // Importación necesaria para formato de fecha local
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'capture_warranty_photo.dart'; // 🔹 Importar la pantalla de captura de foto
 
 class AddWarrantyScreen extends StatefulWidget {
   @override
@@ -126,14 +128,14 @@ class _AddWarrantyScreenState extends State<AddWarrantyScreen> {
             initialDate: date ?? DateTime.now(),
             firstDate: DateTime(2000),
             lastDate: DateTime(2100),
-            locale: const Locale('es', 'ES'), // Asegura selector de fecha en español
+            locale: const Locale('es', 'ES'),
           );
           if (picked != null) onDateSelected(picked);
         },
         label: Text(
           date == null
               ? label
-              : "$label: ${DateFormat('d \'de\' MMMM \'de\' yyyy', 'es_ES').format(date)}",
+              : "$label: ${DateFormat("d 'de' MMMM 'de' yyyy", 'es_ES').format(date)}",
           style: TextStyle(fontSize: 16, color: Colors.white),
         ),
       ),
@@ -141,19 +143,22 @@ class _AddWarrantyScreenState extends State<AddWarrantyScreen> {
   }
 
   void _saveWarranty() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("⚠️ No hay usuario autenticado! No se puede registrar garantía.");
+      return;
+    }
+
+    String sellerId = user.uid;
     String product = _productNameController.text.trim();
     String store = _storeController.text.trim();
     String customerEmail = _customerEmailController.text.trim();
     String customerName = _customerNameController.text.trim();
     String sellerName = _sellerNameController.text.trim();
 
-    if (product.isNotEmpty &&
-        store.isNotEmpty &&
-        customerEmail.isNotEmpty &&
-        customerName.isNotEmpty &&
-        sellerName.isNotEmpty &&
-        _purchaseDate != null &&
-        _expirationDate != null) {
+    if (product.isNotEmpty && store.isNotEmpty && customerEmail.isNotEmpty &&
+        customerName.isNotEmpty && sellerName.isNotEmpty &&
+        _purchaseDate != null && _expirationDate != null) {
       try {
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('users')
@@ -163,35 +168,34 @@ class _AddWarrantyScreenState extends State<AddWarrantyScreen> {
         if (querySnapshot.docs.isNotEmpty) {
           String customerId = querySnapshot.docs.first.id;
 
-          DocumentReference newWarrantyRef = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(customerId)
-              .collection('warranties')
-              .add({
+          Map<String, dynamic> warrantyData = {
             'product': product,
             'store': store,
             'customerName': customerName,
+            'customerEmail': customerEmail,
             'sellerName': sellerName,
             'purchaseDate': Timestamp.fromDate(_purchaseDate!),
             'expirationDate': Timestamp.fromDate(_expirationDate!),
+            'sellerId': sellerId,
             'message': "Gracias por su compra, esta es su garantía.",
-          });
+          };
 
-          await newWarrantyRef.update({'id': newWarrantyRef.id});
+          // 🔹 Guardar la garantía y obtener la referencia del documento
+          DocumentReference warrantyRef =
+          await FirebaseFirestore.instance.collection('warranties').add(warrantyData);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Garantía asignada exitosamente")),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("No se encontró al cliente")),
+          await FirebaseFirestore.instance.collection('users').doc(customerId).collection('warranties').add(warrantyData);
+
+          // 🔹 Usamos `warrantyRef.id` en lugar de `warrantyDoc.id`
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CaptureWarrantyPhoto(warrantyId: warrantyRef.id)),
           );
         }
       } catch (e) {
-        print("❌ Error al asignar garantía: $e");
+        print("❌ Error al asignar garantía en Firebase: $e");
       }
-    } else {
-      print("❌ Campos vacíos");
     }
   }
+
 }
